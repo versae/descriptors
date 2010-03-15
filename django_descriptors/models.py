@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.db.models import signals
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext as _
@@ -9,7 +10,7 @@ from django.utils import simplejson
 class DescriptorManager(models.Manager):
 
     def add_descriptor(self, obj, descriptor_item):
-        return self.add_descriptors(obj, [descriptors_item])
+        return self.add_descriptors(obj, [descriptor_item])
 
     def add_descriptors(self, obj, descriptors_list, json=False):
         if json:
@@ -49,22 +50,36 @@ class Descriptor(models.Model):
                             db_index=True)
     parent = models.ForeignKey('self', verbose_name=_(u'parent'), blank=True,
                                null=True)
+    # Denormalized field
+    path = models.TextField(_('path'), unique=True, editable=False)
     description = models.TextField(_('description'), blank=True)
 
     objects = DescriptorManager()
 
     class Meta:
-        ordering = ('name', )
+        ordering = ('path', 'name')
         verbose_name = _('descriptor')
         verbose_name_plural = _('descriptors')
 
     def __unicode__(self):
-        return self.name
+        return self.path
+
+
+def save_descriptor_path(**kwargs):
+    """
+    Build the path of an element to its root.
+    """
+    instance = kwargs['instance']
+    if instance.parent:
+        instance.path = u"%s → %s" % (instance.parent.path, instance.name)
+    else:
+        instance.path = u"[ %s ]" % instance.name
+signals.pre_save.connect(save_descriptor_path, Descriptor)
 
 
 class DescribedItem(models.Model):
     """
-    Holds the relationship between a descriptor and the item being described.
+    Hold the relationship between a descriptor and the item being described.
     """
     descriptor = models.ForeignKey(Descriptor, verbose_name=_('descriptor'),
                                    related_name='items')

@@ -119,7 +119,7 @@ class DescriptorField(CharField):
         return 'CharField'
 
     def formfield(self, **kwargs):
-        from descriptors import forms
+        from django_descriptors import forms
         defaults = {'form_class': forms.DescriptorField}
         defaults.update(kwargs)
         return super(DescriptorField, self).formfield(**defaults)
