@@ -7,8 +7,8 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils import simplejson
 
-from descriptors.models import Descriptor, DescribedItem
-from descriptors.utils import edit_string_for_descriptors
+from django_descriptors.models import Descriptor, DescribedItem
+from django_descriptors.utils import edit_string_for_descriptors
 
 
 class DescriptorField(CharField):

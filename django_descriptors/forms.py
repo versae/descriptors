@@ -4,7 +4,7 @@ Descriptors components for Django's form library.
 from django import forms
 from django.utils.translation import ugettext as _
 
-from descriptors.models import Descriptor
+from django_descriptors.models import Descriptor
 
 
 class DescriptorAdminForm(forms.ModelForm):
