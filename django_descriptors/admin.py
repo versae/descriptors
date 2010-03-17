@@ -40,5 +40,5 @@ class DescribedItemInline(generic.GenericTabularInline):
     model = DescribedItem
     form = DescribedItemModelForm
     extra = 1
-    template = 'admin/edit_inline/tabular.html'
+    template = 'admin/tabular.html'
 
