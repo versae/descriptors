@@ -43,18 +43,18 @@ class DescriptorManager(models.Manager):
 
     def get_html_tree(self, obj=None):
         if not obj:
-            roots = self.filter(parent__isnull=True)
-            subtrees = []
-            for root in roots:
-                subtrees.append(self.get_html_tree(root))
-            return u"".join(subtrees)
+            children = self.filter(parent__isnull=True)
         else:
             children = self.filter(parent=obj)
-            lis = []
-            for child in children:
-                lis.append(self.get_html_tree(child))
-            ul = u"<ul><li>%s%s</li></ul>" % (obj.name, u"".join(lis))
-            return ul
+        lis = []
+        for child in children:
+            lis.append(self.get_html_tree(child))
+        if lis:
+            html_lis = "</li><li>".join(lis)
+            html_ul = u"%s<ul><li>%s</li></ul>" % (getattr(obj, "name", ""), html_lis)
+        else:
+            html_ul = u"%s" % getattr(obj, "name", "")
+        return html_ul
 
 
 class Descriptor(models.Model):
