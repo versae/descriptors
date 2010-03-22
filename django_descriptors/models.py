@@ -41,6 +41,21 @@ class DescriptorManager(models.Manager):
         return self.filter(items__content_type__pk=ctype.pk,
                            items__object_id=obj.pk)
 
+    def get_html_tree(self, obj=None):
+        if not obj:
+            roots = self.filter(parent__isnull=True)
+            subtrees = []
+            for root in roots:
+                subtrees.append(self.get_html_tree(root))
+            return u"".join(subtrees)
+        else:
+            children = self.filter(parent=obj)
+            lis = []
+            for child in children:
+                lis.append(self.get_html_tree(child))
+            ul = u"<ul><li>%s%s</li></ul>" % (obj.name, u"".join(lis))
+            return ul
+
 
 class Descriptor(models.Model):
     """
@@ -87,13 +102,18 @@ class DescribedItem(models.Model):
                                      verbose_name=_('content type'))
     object_id = models.PositiveIntegerField(_('object id'), db_index=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    value = models.CharField(_('value'), max_length=250)
+    value = models.CharField(_('value'), max_length=250, null=True, blank=True)
 
     class Meta:
-        # Enforce unique description association per object
-        unique_together = (('descriptor', 'content_type', 'object_id'), )
+        # Enforce unique (description, value) pair association per object
+        unique_together = (('descriptor', 'content_type', 'object_id',
+                            'value'), )
         verbose_name = _('described item')
         verbose_name_plural = _('described items')
 
     def __unicode__(self):
-        return u'%s [%s]' % (self.content_object, self.descriptor)
+        if self.value:
+            return u'%s # %s: %s' % (self.content_object, self.descriptor,
+                                     self.value)
+        else:
+            return u'%s # %s' % (self.content_object, self.descriptor)
