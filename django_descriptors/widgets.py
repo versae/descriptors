@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import get_version
+from django.conf import settings
 from django.forms import widgets
 from django.utils.safestring import mark_safe
 
@@ -11,9 +12,10 @@ class Combobox(widgets.Select):
             'all': ('django_descriptors/css/jquery.combobox.css', ),
         }
         js = []
-        if int(get_version().split(" ")[0].split(".")[1]) < 2:
-            js.append('django_descriptors/js/jquery.js')
+#        if int(get_version().split(" ")[0].split(".")[1]) < 2:
+#        js.append('django_descriptors/js/jquery.js')
         js.append('django_descriptors/js/jquery.combobox.js')
+#        js.append('django_descriptors/js/jquery.formset.js')
         js.append('django_descriptors/js/combobox.js')
 
     def render(self, *args, **kwargs):

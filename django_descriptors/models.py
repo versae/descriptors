@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django.db.models import signals
+from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext as _
@@ -68,6 +69,7 @@ class Descriptor(models.Model):
     # Denormalized field
     path = models.TextField(_('path'), unique=True, editable=False)
     description = models.TextField(_('description'), blank=True)
+    user = models.ForeignKey(User, verbose_name=_(u'user'))
 
     objects = DescriptorManager()
 
@@ -103,6 +105,7 @@ class DescribedItem(models.Model):
     object_id = models.PositiveIntegerField(_('object id'), db_index=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     value = models.CharField(_('value'), max_length=250, null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name=_(u'user'))
 
     class Meta:
         # Enforce unique (description, value) pair association per object

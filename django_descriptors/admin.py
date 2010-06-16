@@ -24,6 +24,11 @@ class DescriptorAdmin(admin.ModelAdmin):
     related_search_fields = {
         'parent': ('name', 'path'),
     }
+    exclude = ('user', )
+
+    def save_model(self, request, obj, form, change):
+        obj.user = request.user
+        obj.save()
 
 
 class DescribedItemModelForm(forms.ModelForm):
@@ -42,3 +47,4 @@ class DescribedItemInline(generic.GenericTabularInline):
     extra = 0
     # Add combobox in selects from inlines
     template = "admin/tabular.html"
+    exclude = ('user', )

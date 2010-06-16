@@ -63,4 +63,4 @@
         // Apply live selects
         $("select.combobox:visible").combobox();
     });
-})(jQuery.noConflict());
+})(django.jQuery);
