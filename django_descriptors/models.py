@@ -105,12 +105,13 @@ class DescribedItem(models.Model):
     object_id = models.PositiveIntegerField(_('object id'), db_index=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     value = models.CharField(_('value'), max_length=250, null=True, blank=True)
-    user = models.ForeignKey(User, verbose_name=_(u'user'))
+    user = models.ForeignKey(User, verbose_name=_(u'user'),
+                             null=True, blank=True)
 
     class Meta:
         # Enforce unique (description, value) pair association per object
         unique_together = (('descriptor', 'content_type', 'object_id',
-                            'value'), )
+                            'value', 'user'), )
         verbose_name = _('described item')
         verbose_name_plural = _('described items')
 
@@ -120,3 +121,20 @@ class DescribedItem(models.Model):
                                      self.value)
         else:
             return u'%s # %s' % (self.content_object, self.descriptor)
+
+def save_described_item(**kwargs):
+    """
+    Build the path of an element to its root.
+    """
+    instance = kwargs['instance']
+    filter_kwargs = {
+        "descriptor": instance.descriptor,
+        "content_type": instance.content_type,
+        "object_id": instance.object_id,
+        "value": instance.value,
+        "user": instance.user,
+    }
+    instances = instance.__class__.objects.filter(**filter_kwargs)
+    if instances:
+        instances.delete()
+signals.pre_save.connect(save_described_item, DescribedItem)
