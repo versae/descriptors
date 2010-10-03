@@ -62,8 +62,7 @@ class Descriptor(models.Model):
     """
     A descriptor.
     """
-    name = models.CharField(_('name'), max_length=100, unique=True,
-                            db_index=True)
+    name = models.CharField(_('name'), max_length=100)
     parent = models.ForeignKey('self', verbose_name=_(u'parent'), blank=True,
                                null=True)
     # Denormalized field
@@ -94,6 +93,18 @@ def save_descriptor_path(**kwargs):
 signals.pre_save.connect(save_descriptor_path, Descriptor)
 
 
+class DescribedItemManager(models.Manager):
+
+    def get_for_object(self, obj):
+        """
+        Create a queryset matching all descriptors associated with the given
+        object.
+        """
+        ctype = ContentType.objects.get_for_model(obj)
+        return self.filter(content_type__pk=ctype.pk,
+                           object_id=obj.pk).order_by("descriptor__path")
+
+
 class DescribedItem(models.Model):
     """
     Hold the relationship between a descriptor and the item being described.
@@ -107,6 +118,7 @@ class DescribedItem(models.Model):
     value = models.CharField(_('value'), max_length=250, null=True, blank=True)
     user = models.ForeignKey(User, verbose_name=_(u'user'),
                              null=True, blank=True)
+    objects = DescribedItemManager()
 
     class Meta:
         # Enforce unique (description, value) pair association per object
