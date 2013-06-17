@@ -42,6 +42,22 @@ class DescriptorManager(models.Manager):
         return self.filter(items__content_type__pk=ctype.pk,
                            items__object_id=obj.pk)
 
+    def get_common(self, obj1, obj2):
+        """
+        Get a queryset with the common descriptors between obj1 and obj2.
+        """
+
+        descs = self.get_for_object(obj1)
+        descs_ids = [d['id'] for d in descs.values('id')]
+        return self.get_for_object(obj2).filter(id__in=descs_ids)
+
+    def get_common_ids(self, obj1, obj2):
+        """
+        Get a list with the id's of common descriptors between obj1 and obj2.
+        """
+        common_descs = self.get_common(obj1, obj2).values('id')
+        return [d['id'] for d in common_descs]
+
     def get_html_tree(self, obj=None):
         if not obj:
             children = self.filter(parent__isnull=True)
